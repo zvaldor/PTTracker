@@ -1,0 +1,86 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { User } from '@pt/shared';
+import { api } from '@/lib/api';
+
+interface AuthState {
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, locale?: 'en' | 'ru') => Promise<void>;
+  requestMagicLink: (email: string) => Promise<void>;
+  verifyMagicLink: (token: string) => Promise<void>;
+  logout: () => void;
+  setUser: (user: User) => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      isAuthenticated: false,
+
+      login: async (email, password) => {
+        const response: any = await api.login({ email, password });
+        api.setToken(response.accessToken);
+        set({
+          user: response.user,
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          isAuthenticated: true,
+        });
+      },
+
+      register: async (email, password, locale = 'en') => {
+        const response: any = await api.register({ email, password, locale });
+        api.setToken(response.accessToken);
+        set({
+          user: response.user,
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          isAuthenticated: true,
+        });
+      },
+
+      requestMagicLink: async (email) => {
+        await api.requestMagicLink(email);
+      },
+
+      verifyMagicLink: async (token) => {
+        const response: any = await api.verifyMagicLink(token);
+        api.setToken(response.accessToken);
+        set({
+          user: response.user,
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          isAuthenticated: true,
+        });
+      },
+
+      logout: () => {
+        api.setToken(null);
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        });
+      },
+
+      setUser: (user) => set({ user }),
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
+  )
+);
