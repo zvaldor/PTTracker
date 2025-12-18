@@ -1,0 +1,7 @@
+[build]
+  command = "pnpm --filter @pt/web... run build"
+  publish = "apps/web/out"
+
+# Keep Netlify runtime from trying to run server functions; we serve static export from /out.
+[plugins]
+  package = "@netlify/plugin-nextjs"

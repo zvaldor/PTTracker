@@ -7,6 +7,7 @@ const withPWA = require('next-pwa')({
 
 const isProd = process.env.NODE_ENV === 'production';
 const repoName = 'PTTracker'; // Change to your repo name
+const isNetlify = process.env.NETLIFY === 'true';
 
 module.exports = withPWA({
   reactStrictMode: true,
@@ -17,10 +18,10 @@ module.exports = withPWA({
 
   // Base path for GitHub Pages (repo name)
   // Comment out if using custom domain or user/org pages
-  basePath: isProd ? `/${repoName}` : '',
+  basePath: isProd && !isNetlify ? `/${repoName}` : '',
 
   // Asset prefix for GitHub Pages
-  assetPrefix: isProd ? `/${repoName}/` : '',
+  assetPrefix: isProd && !isNetlify ? `/${repoName}/` : '',
 
   // Disable image optimization for static export
   images: {

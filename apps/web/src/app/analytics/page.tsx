@@ -17,7 +17,9 @@ export default function AnalyticsPage() {
 
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [timeWindow, setTimeWindow] = useState('thisWeek');
+  const timeWindowOptions = ['thisWeek', 'lastWeek', 'thisMonth', 'custom'] as const;
+  type TimeWindow = (typeof timeWindowOptions)[number];
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>('thisWeek');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -74,7 +76,7 @@ export default function AnalyticsPage() {
         <h1 className="text-xl font-bold mb-3">{t('analytics')}</h1>
 
         <div className="flex gap-2 overflow-x-auto no-scrollbar">
-          {['thisWeek', 'lastWeek', 'thisMonth', 'custom'].map((tw) => (
+          {timeWindowOptions.map((tw) => (
             <button
               key={tw}
               onClick={() => setTimeWindow(tw)}
