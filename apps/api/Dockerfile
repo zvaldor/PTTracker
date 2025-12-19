@@ -69,6 +69,10 @@ COPY --from=deploy /app/pruned/node_modules ./node_modules
 COPY --from=builder /app/packages/shared/package.json ./node_modules/@pt/shared/
 COPY --from=builder /app/packages/shared/dist ./node_modules/@pt/shared/dist
 
+# Copy generated Prisma Client from builder (this is critical!)
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client ./node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client
+
 EXPOSE 3001
 
 CMD ["sh", "-c", "echo 'Starting API...' && npx prisma migrate deploy && echo 'Migrations complete!' && node dist/main"]
