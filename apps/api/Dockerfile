@@ -54,4 +54,4 @@ COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 EXPOSE 3001
 
-# Railway uses startCommand from railway.json, so no CMD needed here
+CMD ["sh", "-c", "echo 'Starting API...' && echo \"DATABASE_URL: ${DATABASE_URL:0:20}...\" && npx prisma migrate deploy && echo 'Migrations complete!' && node dist/main"]
