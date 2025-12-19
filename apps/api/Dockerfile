@@ -59,4 +59,4 @@ EXPOSE 3001
 
 # Use the locally installed prisma version (5.7.1) from apps/api/node_modules
 # In pnpm, binaries are in the scoped package location
-CMD ["sh", "-c", "./apps/api/node_modules/.bin/prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "echo '=== Starting container ===' && pwd && echo '=== Listing directory ===' && ls -la && echo '=== Checking prisma binary ===' && ls -la ./apps/api/node_modules/.bin/ && echo '=== Running migrations ===' && ./apps/api/node_modules/.bin/prisma migrate deploy && echo '=== Starting application ===' && node dist/main"]
