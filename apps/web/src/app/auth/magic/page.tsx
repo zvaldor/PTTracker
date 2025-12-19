@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 
-export default function MagicLinkPage() {
+function MagicLinkVerifier() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const verifyMagicLink = useAuthStore((s) => s.verifyMagicLink);
@@ -40,5 +40,19 @@ export default function MagicLinkPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MagicLinkPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+        </div>
+      </div>
+    }>
+      <MagicLinkVerifier />
+    </Suspense>
   );
 }

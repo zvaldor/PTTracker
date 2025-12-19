@@ -23,7 +23,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   loadTasks: async () => {
     try {
       set({ loading: true, error: null });
-      const tasks = await db.tasks.where('_deleted').notEqual(true).toArray();
+      const tasks = await db.tasks.where('_deleted').notEqual(1).toArray();
       set({ tasks: tasks as Task[], loading: false });
     } catch (error: any) {
       set({ error: error.message, loading: false });
@@ -88,7 +88,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
 
   sync: async () => {
     try {
-      const dirtyTasks = await db.tasks.where('_dirty').equals(true).toArray();
+      const dirtyTasks = await db.tasks.where('_dirty').equals(1).toArray();
       const lastSyncAt = (await db.meta.get('lastSyncAt'))?.value;
 
       const response: any = await api.sync({
