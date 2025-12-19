@@ -61,4 +61,5 @@ COPY --from=builder /app/packages/shared/package.json ./node_modules/@pt/shared/
 EXPOSE 3001
 
 # Run from /app/apps/api where node_modules contains all dependencies
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/main"]
+# Run migrations, then seed (create test user), then start app
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node_modules/.bin/ts-node prisma/seed.ts || true && node dist/main"]
