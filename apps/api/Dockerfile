@@ -55,7 +55,9 @@ COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/apps/api/node_modules ./node_modules
 
 # Create symlink to @pt/shared from local node_modules to root workspace node_modules
+# Remove existing @pt/shared if it exists, then create symlink
 RUN mkdir -p node_modules/@pt && \
+    rm -rf node_modules/@pt/shared && \
     ln -s /app/node_modules/@pt/shared node_modules/@pt/shared
 
 EXPOSE 3001
