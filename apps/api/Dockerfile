@@ -45,8 +45,6 @@ FROM base AS runner
 WORKDIR /app/apps/api
 
 ENV NODE_ENV=production
-# Add root workspace node_modules to NODE_PATH so workspace dependencies can be resolved
-ENV NODE_PATH=/app/node_modules
 
 # Copy built artifacts to the working directory
 COPY --from=builder /app/apps/api/dist ./dist
@@ -55,6 +53,10 @@ COPY --from=builder /app/apps/api/prisma ./prisma
 # Copy node_modules - both root (for @pt/shared) and api-specific
 COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/apps/api/node_modules ./node_modules
+
+# Create symlink to @pt/shared from local node_modules to root workspace node_modules
+RUN mkdir -p node_modules/@pt && \
+    ln -s /app/node_modules/@pt/shared node_modules/@pt/shared
 
 EXPOSE 3001
 
