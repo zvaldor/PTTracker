@@ -6,7 +6,7 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "sh -c 'npx prisma migrate deploy && node dist/main'",
+    "startCommand": "sh -c 'echo \"Starting API...\" && echo \"DATABASE_URL: ${DATABASE_URL:0:20}...\" && npx prisma migrate deploy && echo \"Migrations complete!\" && node dist/main'",
     "healthcheckPath": "/",
     "healthcheckTimeout": 100
   }
