@@ -15,7 +15,7 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/api/package.json ./apps/api/
 
-# Install dependencies
+# Install ALL dependencies (including dev dependencies for build)
 RUN pnpm install --frozen-lockfile
 
 # Stage 2: Builder
@@ -40,19 +40,7 @@ WORKDIR /app/apps/api
 RUN pnpm prisma:generate
 RUN pnpm build
 
-# Stage 3: Deploy (create standalone node_modules without symlinks)
-FROM base AS deploy
-WORKDIR /app
-
-# Copy workspace files
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
-COPY packages/shared/package.json ./packages/shared/
-COPY apps/api/package.json ./apps/api/
-
-# Use pnpm deploy to create a standalone node_modules without symlinks
-RUN pnpm --filter @pt/api --prod deploy pruned
-
-# Stage 4: Runner
+# Stage 3: Runner
 FROM base AS runner
 WORKDIR /app
 
@@ -62,17 +50,11 @@ ENV NODE_ENV=production
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/prisma ./prisma
 
-# Copy standalone node_modules from deploy stage (without symlinks)
-COPY --from=deploy /app/pruned/node_modules ./node_modules
-
-# Copy @pt/shared package manually into node_modules
-COPY --from=builder /app/packages/shared/package.json ./node_modules/@pt/shared/
-COPY --from=builder /app/packages/shared/dist ./node_modules/@pt/shared/dist
-
-# Copy generated Prisma Client from builder (this is critical!)
-COPY --from=builder /app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client ./node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client
+# Copy the ENTIRE node_modules from builder (includes everything: deps, prisma client, @pt/shared)
+# This is larger but much simpler and more reliable
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "echo 'Starting API...' && npx prisma migrate deploy && echo 'Migrations complete!' && node dist/main"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
