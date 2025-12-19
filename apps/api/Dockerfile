@@ -57,5 +57,6 @@ COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 
 EXPOSE 3001
 
-# Use the locally installed prisma version (5.7.1) instead of npx which downloads latest (7.x)
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/main"]
+# Use the locally installed prisma version (5.7.1) from apps/api/node_modules
+# In pnpm, binaries are in the scoped package location
+CMD ["sh", "-c", "./apps/api/node_modules/.bin/prisma migrate deploy && node dist/main"]
