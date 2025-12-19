@@ -51,13 +51,6 @@ export default function LoginPage() {
     }
   };
 
-  // TEMPORARY: Test login without backend
-  const handleTestLogin = () => {
-    const setToken = useAuthStore.getState().setToken;
-    setToken('test-token-123', 'test-refresh-token-456');
-    router.push('/');
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md">
@@ -157,16 +150,6 @@ export default function LoginPage() {
             <Link href="/auth/register" className="text-primary-600 hover:text-primary-700 font-medium">
               {t('register')}
             </Link>
-          </div>
-
-          {/* TEMPORARY: Test login button - REMOVE BEFORE PRODUCTION */}
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              onClick={handleTestLogin}
-              className="w-full py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium text-sm"
-            >
-              🧪 Test Login (No Backend)
-            </button>
           </div>
         </div>
       </div>
