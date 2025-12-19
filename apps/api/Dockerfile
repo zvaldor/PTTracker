@@ -45,6 +45,8 @@ FROM base AS runner
 WORKDIR /app/apps/api
 
 ENV NODE_ENV=production
+# Add root workspace node_modules to NODE_PATH so workspace dependencies can be resolved
+ENV NODE_PATH=/app/node_modules
 
 # Copy built artifacts to the working directory
 COPY --from=builder /app/apps/api/dist ./dist
