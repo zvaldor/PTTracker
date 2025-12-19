@@ -7,6 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { SettingsModule } from './settings/settings.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { SyncModule } from './sync/sync.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SyncModule } from './sync/sync.module';
       isGlobal: true,
     }),
     PrismaModule,
+    HealthModule,
     AuthModule,
     TasksModule,
     CategoriesModule,
