@@ -42,13 +42,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy built artifacts
-COPY --from=builder /app/apps/web/.next ./.next
-COPY --from=builder /app/apps/web/public ./public
-COPY --from=builder /app/apps/web/node_modules ./node_modules
-COPY --from=builder /app/apps/web/package.json ./package.json
-COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+# Copy static export output
+COPY --from=builder /app/apps/web/out ./out
 
 EXPOSE 3000
 
-CMD ["pnpm", "start"]
+CMD ["npx", "serve@latest", "out", "-l", "3000"]

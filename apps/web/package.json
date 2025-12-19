@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "pnpm --filter @pt/shared build && next build",
-    "start": "next start",
+    "start": "npx serve@latest out -l 3000",
     "clean": "rm -rf .next"
   },
   "dependencies": {
