@@ -42,21 +42,19 @@ RUN pnpm build
 
 # Stage 3: Runner
 FROM base AS runner
-WORKDIR /app
+WORKDIR /app/apps/api
 
 ENV NODE_ENV=production
 
-# Copy built artifacts
+# Copy built artifacts to the working directory
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/prisma ./prisma
 
-# Copy the ENTIRE node_modules from builder (includes everything: deps, prisma client, @pt/shared)
-# This is larger but much simpler and more reliable
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
+# Copy node_modules - both root (for @pt/shared) and api-specific
+COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/apps/api/node_modules ./node_modules
 
 EXPOSE 3001
 
-# Use the locally installed prisma version (5.7.1) from apps/api/node_modules
-# In pnpm, binaries are in the scoped package location
-CMD ["sh", "-c", "echo '=== Starting container ===' && pwd && echo '=== Listing directory ===' && ls -la && echo '=== Checking prisma binary ===' && ls -la ./apps/api/node_modules/.bin/ && echo '=== Running migrations ===' && ./apps/api/node_modules/.bin/prisma migrate deploy && echo '=== Starting application ===' && node dist/main"]
+# Run from /app/apps/api where node_modules contains all dependencies
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/main"]
