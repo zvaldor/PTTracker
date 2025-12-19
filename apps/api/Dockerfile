@@ -57,4 +57,5 @@ COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+# Use the locally installed prisma version (5.7.1) instead of npx which downloads latest (7.x)
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/main"]
