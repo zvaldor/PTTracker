@@ -61,10 +61,13 @@ ENV NODE_ENV=production
 # Copy built artifacts
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/prisma ./prisma
-COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 # Copy standalone node_modules from deploy stage (without symlinks)
 COPY --from=deploy /app/pruned/node_modules ./node_modules
+
+# Copy @pt/shared package manually into node_modules
+COPY --from=builder /app/packages/shared/package.json ./node_modules/@pt/shared/
+COPY --from=builder /app/packages/shared/dist ./node_modules/@pt/shared/dist
 
 EXPOSE 3001
 
