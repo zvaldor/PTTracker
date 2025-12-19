@@ -54,4 +54,4 @@ COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "echo 'Starting API...' && echo \"DATABASE_URL: ${DATABASE_URL:0:20}...\" && npx prisma migrate deploy && echo 'Migrations complete!' && node dist/main"]
+CMD ["sh", "-c", "echo 'Starting API...' && echo \"DATABASE_URL: ${DATABASE_URL:0:20}...\" && ls -la node_modules/ | head -20 && echo '---' && ls -la node_modules/.pnpm/ | head -20 && npx prisma migrate deploy && echo 'Migrations complete!' && node dist/main"]
