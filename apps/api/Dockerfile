@@ -54,4 +54,4 @@ COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+# Railway uses startCommand from railway.json, so no CMD needed here
