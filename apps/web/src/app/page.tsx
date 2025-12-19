@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useTasksStore } from '@/stores/tasksStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useTranslation } from '@/lib/i18n';
+import { LandingPage } from '@/components/LandingPage';
 import { BottomNav } from '@/components/BottomNav';
 import { PlanModeSelector } from '@/components/PlanModeSelector';
 import { TaskList } from '@/components/TaskList';
@@ -14,7 +14,6 @@ import { TaskFormModal } from '@/components/TaskFormModal';
 import { format, getDay } from 'date-fns';
 
 export default function HomePage() {
-  const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const locale = useSettingsStore((s) => s.locale);
   const planMode = useSettingsStore((s) => s.planMode);
@@ -24,12 +23,10 @@ export default function HomePage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/auth/login');
-      return;
+    if (isAuthenticated) {
+      loadTasks();
     }
-    loadTasks();
-  }, [isAuthenticated, router, loadTasks]);
+  }, [isAuthenticated, loadTasks]);
 
   // Get today's tasks based on plan mode
   const today = new Date();
@@ -60,8 +57,9 @@ export default function HomePage() {
     (task) => !task.weeklyDay && !task.monthlyDay && !task.plannedDate && task.status !== 'archived'
   );
 
+  // Show landing page for unauthenticated users
   if (!isAuthenticated) {
-    return null;
+    return <LandingPage />;
   }
 
   return (
