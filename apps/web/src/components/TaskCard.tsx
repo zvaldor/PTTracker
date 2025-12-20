@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { format, parse } from 'date-fns';
 import type { Task, DifficultyTshirt, Desire } from '@pt/shared';
 import { useTasksStore } from '@/stores/tasksStore';
@@ -22,6 +22,10 @@ export function TaskCard({ task }: TaskCardProps) {
   const [showWeekdayPicker, setShowWeekdayPicker] = useState(false);
   const [showDesirePicker, setShowDesirePicker] = useState(false);
   const [showDifficultyPicker, setShowDifficultyPicker] = useState(false);
+
+  const weekdayRef = useRef<HTMLButtonElement>(null);
+  const desireRef = useRef<HTMLButtonElement>(null);
+  const difficultyRef = useRef<HTMLButtonElement>(null);
 
   const handleToggleDone = async () => {
     await updateTask(task.id, {
@@ -69,74 +73,94 @@ export function TaskCard({ task }: TaskCardProps) {
   return (
     <>
       <div
-        className={`group relative flex items-center gap-4 py-3 px-4 hover:bg-white/20 dark:hover:bg-white/5 rounded-xl transition-all duration-200 ${
+        className={`group relative py-3 px-4 hover:bg-white/20 dark:hover:bg-white/5 rounded-xl transition-all duration-200 ${
           task.status === 'done' ? 'opacity-40' : ''
         }`}
         onTouchStart={() => setShowActions(true)}
         onTouchEnd={() => setTimeout(() => setShowActions(false), 2000)}
       >
-        {/* Checkbox */}
-        <button
-          onClick={handleToggleDone}
-          className={`flex-shrink-0 transition-colors duration-200 ${
-            task.status === 'done' ? 'text-emerald-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-          }`}
-        >
-          <CheckCircleIcon className="w-5 h-5" />
-        </button>
-
-        {/* Title */}
-        <div className="flex-1 min-w-0">
-          <span className={`font-light text-slate-900 dark:text-white ${task.status === 'done' ? 'line-through' : ''}`}>
-            {task.title}
-          </span>
-        </div>
-
-        {/* Inline tags */}
-        <div className="flex items-center gap-3 text-xs font-light">
-          {/* Weekday tag */}
+        {/* Main row with fixed-width columns */}
+        <div className="flex items-center gap-4">
+          {/* Checkbox */}
           <button
-            onClick={() => setShowWeekdayPicker(!showWeekdayPicker)}
-            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            onClick={handleToggleDone}
+            className={`flex-shrink-0 transition-colors duration-200 ${
+              task.status === 'done' ? 'text-emerald-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+            }`}
           >
-            {displayDay || '+day'}
+            <CheckCircleIcon className="w-5 h-5" />
           </button>
 
-          {/* Desire tag */}
-          <button
-            onClick={() => setShowDesirePicker(!showDesirePicker)}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-          >
-            {task.desire || '+desire'}
-          </button>
+          {/* Title and Description */}
+          <div className="flex-1 min-w-0">
+            <div className={`font-light text-slate-900 dark:text-white ${task.status === 'done' ? 'line-through' : ''}`}>
+              {task.title}
+            </div>
+            {task.description && (
+              <div className="text-xs font-light text-slate-500 dark:text-slate-400 mt-1">
+                {task.description}
+              </div>
+            )}
+          </div>
 
-          {/* Difficulty tag */}
-          <button
-            onClick={() => setShowDifficultyPicker(!showDifficultyPicker)}
-            className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-          >
-            {task.difficultyTshirt || '+diff'}
-          </button>
+          {/* Fixed-width tag columns */}
+          <div className="flex items-center gap-2 text-xs font-light">
+            {/* Weekday tag - fixed width */}
+            <button
+              ref={weekdayRef}
+              onClick={() => setShowWeekdayPicker(!showWeekdayPicker)}
+              className="w-14 text-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              {displayDay || '+day'}
+            </button>
 
-          {task.carryOverCount > 0 && (
-            <span className="text-orange-600 dark:text-orange-400">↻{task.carryOverCount}</span>
+            {/* Desire tag - fixed width */}
+            <button
+              ref={desireRef}
+              onClick={() => setShowDesirePicker(!showDesirePicker)}
+              className="w-16 text-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            >
+              {task.desire || '+desire'}
+            </button>
+
+            {/* Difficulty tag - fixed width */}
+            <button
+              ref={difficultyRef}
+              onClick={() => setShowDifficultyPicker(!showDifficultyPicker)}
+              className="w-10 text-center text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+            >
+              {task.difficultyTshirt || '+diff'}
+            </button>
+
+            {/* Carryover count - fixed width */}
+            <div className="w-10 text-center">
+              {task.carryOverCount > 0 && (
+                <span className="text-orange-600 dark:text-orange-400">↻{task.carryOverCount}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Delete button */}
+          {showActions && (
+            <button
+              onClick={handleDelete}
+              className="flex-shrink-0 text-red-500 hover:text-red-600 transition-colors"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </button>
           )}
         </div>
-
-        {/* Delete button */}
-        {showActions && (
-          <button
-            onClick={handleDelete}
-            className="flex-shrink-0 text-red-500 hover:text-red-600 transition-colors"
-          >
-            <TrashIcon className="w-4 h-4" />
-          </button>
-        )}
       </div>
 
-      {/* Weekday picker popup */}
-      {showWeekdayPicker && (
-        <div className="absolute z-50 mt-2 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg">
+      {/* Weekday picker popup - positioned relative to button */}
+      {showWeekdayPicker && weekdayRef.current && (
+        <div
+          className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
+          style={{
+            top: `${weekdayRef.current.getBoundingClientRect().bottom + 8}px`,
+            left: `${weekdayRef.current.getBoundingClientRect().left}px`,
+          }}
+        >
           <div className="grid grid-cols-7 gap-1">
             {WEEKDAY_FULL.map((day, index) => (
               <button
@@ -151,9 +175,15 @@ export function TaskCard({ task }: TaskCardProps) {
         </div>
       )}
 
-      {/* Desire picker popup */}
-      {showDesirePicker && (
-        <div className="absolute z-50 mt-2 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg">
+      {/* Desire picker popup - positioned relative to button */}
+      {showDesirePicker && desireRef.current && (
+        <div
+          className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
+          style={{
+            top: `${desireRef.current.getBoundingClientRect().bottom + 8}px`,
+            left: `${desireRef.current.getBoundingClientRect().left}px`,
+          }}
+        >
           <div className="flex flex-col gap-1 min-w-[100px]">
             {(['low', 'med', 'high'] as Desire[]).map((desire) => (
               <button
@@ -168,9 +198,15 @@ export function TaskCard({ task }: TaskCardProps) {
         </div>
       )}
 
-      {/* Difficulty picker popup */}
-      {showDifficultyPicker && (
-        <div className="absolute z-50 mt-2 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg">
+      {/* Difficulty picker popup - positioned relative to button */}
+      {showDifficultyPicker && difficultyRef.current && (
+        <div
+          className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
+          style={{
+            top: `${difficultyRef.current.getBoundingClientRect().bottom + 8}px`,
+            left: `${difficultyRef.current.getBoundingClientRect().left}px`,
+          }}
+        >
           <div className="flex gap-1">
             {(['S', 'M', 'L', 'XL'] as DifficultyTshirt[]).map((diff) => (
               <button

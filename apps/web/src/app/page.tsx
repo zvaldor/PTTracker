@@ -10,6 +10,8 @@ import { PlanModeSelector } from '@/components/PlanModeSelector';
 import { TaskList } from '@/components/TaskList';
 import { FAB } from '@/components/FAB';
 import { TaskFormModal } from '@/components/TaskFormModal';
+import { SettingsPage } from '@/components/SettingsPage';
+import { AnalyticsPage } from '@/components/AnalyticsPage';
 import { Bars3Icon } from '@heroicons/react/24/outline';
 import { format, getDay } from 'date-fns';
 
@@ -148,16 +150,8 @@ export default function HomePage() {
 
       <main className="relative px-4 py-6">
         {currentPage === 'tasks' && <TaskList tasks={todayTasks} />}
-        {currentPage === 'analytics' && (
-          <div className="text-center py-12 text-slate-600 dark:text-slate-400 font-light">
-            Analytics coming soon...
-          </div>
-        )}
-        {currentPage === 'settings' && (
-          <div className="text-center py-12 text-slate-600 dark:text-slate-400 font-light">
-            Settings coming soon...
-          </div>
-        )}
+        {currentPage === 'analytics' && <AnalyticsPage />}
+        {currentPage === 'settings' && <SettingsPage />}
       </main>
 
       <FAB onClick={() => setShowCreateModal(true)} />
