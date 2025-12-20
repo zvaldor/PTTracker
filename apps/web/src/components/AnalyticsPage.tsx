@@ -62,11 +62,13 @@ export function AnalyticsPage() {
 
   const COLORS = ['#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
 
+  const timeWindows = ['thisWeek', 'lastWeek', 'thisMonth'] as const;
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Time Window Selector */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar backdrop-blur-xl bg-white/20 dark:bg-white/5 rounded-xl p-1">
-        {['thisWeek', 'lastWeek', 'thisMonth', 'custom'].map((tw) => (
+        {timeWindows.map((tw) => (
           <button
             key={tw}
             onClick={() => setTimeWindow(tw)}
