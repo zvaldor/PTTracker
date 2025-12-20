@@ -25,6 +25,14 @@ export class PTDatabase extends Dexie {
       settings: 'id, userId',
       meta: 'key',
     });
+
+    // Version 2: Add _dirty and _deleted indexes for sync
+    this.version(2).stores({
+      tasks: 'id, userId, status, weeklyDay, monthlyDay, plannedDate, lastPlannedKey, isRecurring, occurrencePerWeekEstimate, _dirty, _deleted',
+      categories: 'id, userId, isEnabled, _deleted',
+      settings: 'id, userId',
+      meta: 'key',
+    });
   }
 }
 
