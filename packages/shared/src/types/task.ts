@@ -49,6 +49,7 @@ export interface CreateTaskDto {
   weeklyDay?: number;
   monthlyDay?: number;
   plannedDate?: string;
+  plannedDateActual?: string;
   difficultyTshirt?: DifficultyTshirt;
   difficultyHours?: number;
   desire?: Desire;
@@ -64,6 +65,7 @@ export interface UpdateTaskDto {
   weeklyDay?: number;
   monthlyDay?: number;
   plannedDate?: string;
+  plannedDateActual?: string;
   difficultyTshirt?: DifficultyTshirt;
   difficultyHours?: number;
   desire?: Desire;
