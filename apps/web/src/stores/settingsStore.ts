@@ -7,12 +7,12 @@ interface SettingsState {
   locale: 'en' | 'ru';
   theme: 'system' | 'light' | 'dark';
   actualTheme: 'light' | 'dark';
-  planMode: 'weekly' | 'monthly' | 'range';
+  planMode: 'weekly' | 'monthly';
   setSettings: (settings: Settings) => void;
   setLocale: (locale: 'en' | 'ru') => void;
   setTheme: (theme: 'system' | 'light' | 'dark') => void;
   setActualTheme: (theme: 'light' | 'dark') => void;
-  setPlanMode: (mode: 'weekly' | 'monthly' | 'range') => void;
+  setPlanMode: (mode: 'weekly' | 'monthly') => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(

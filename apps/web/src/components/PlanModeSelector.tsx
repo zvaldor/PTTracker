@@ -9,18 +9,18 @@ export function PlanModeSelector() {
   const setPlanMode = useSettingsStore((s) => s.setPlanMode);
   const { t } = useTranslation(locale);
 
-  const modes: Array<'weekly' | 'monthly' | 'range'> = ['weekly', 'monthly', 'range'];
+  const modes: Array<'weekly' | 'monthly'> = ['weekly', 'monthly'];
 
   return (
-    <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+    <div className="flex gap-2 backdrop-blur-sm bg-white/20 dark:bg-white/5 rounded-xl p-1">
       {modes.map((mode) => (
         <button
           key={mode}
           onClick={() => setPlanMode(mode)}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-light transition-all ${
             planMode === mode
-              ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-300'
+              ? 'bg-white/60 dark:bg-white/10 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           {t(mode)}

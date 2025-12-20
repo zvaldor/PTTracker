@@ -22,6 +22,7 @@ export default function HomePage() {
   const { tasks, loadTasks } = useTasksStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [currentPage, setCurrentPage] = useState<'tasks' | 'analytics' | 'settings'>('tasks');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -69,38 +70,68 @@ export default function HomePage() {
       {/* Minimal header */}
       <header className="relative backdrop-blur-xl bg-white/30 dark:bg-white/5 border-b border-white/20 dark:border-white/10 sticky top-0 z-40">
         <div className="px-4 py-4 flex items-center justify-between">
-          {/* Menu button */}
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-2 hover:bg-white/20 dark:hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <Bars3Icon className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-          </button>
+          {/* Menu button or Back button */}
+          {currentPage === 'tasks' ? (
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-2 hover:bg-white/20 dark:hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <Bars3Icon className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setCurrentPage('tasks')}
+              className="px-3 py-2 hover:bg-white/20 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-700 dark:text-slate-300 font-light text-sm"
+            >
+              ← Back
+            </button>
+          )}
 
-          {/* Month/Date */}
+          {/* Month/Date or Page Title */}
           <h1 className="text-lg font-light text-slate-900 dark:text-white">
-            {planMode === 'monthly' ? currentMonth : format(today, 'EEEE, d')}
+            {currentPage === 'tasks'
+              ? (planMode === 'monthly' ? currentMonth : format(today, 'EEEE, d'))
+              : currentPage.charAt(0).toUpperCase() + currentPage.slice(1)
+            }
           </h1>
 
-          {/* Completed counter */}
-          <div className="text-sm font-light text-slate-600 dark:text-slate-400">
-            {completedCount}/{totalCount}
-          </div>
+          {/* Completed counter (only on tasks page) */}
+          {currentPage === 'tasks' ? (
+            <div className="text-sm font-light text-slate-600 dark:text-slate-400">
+              {completedCount}/{totalCount}
+            </div>
+          ) : (
+            <div className="w-12" />
+          )}
         </div>
 
-        {/* Plan mode selector */}
-        <div className="px-4 pb-4">
-          <PlanModeSelector />
-        </div>
+        {/* Plan mode selector (only on tasks page) */}
+        {currentPage === 'tasks' && (
+          <div className="px-4 pb-4">
+            <PlanModeSelector />
+          </div>
+        )}
       </header>
 
       {/* Menu dropdown */}
       {showMenu && (
         <div className="absolute top-16 left-4 z-50 backdrop-blur-xl bg-white/40 dark:bg-white/10 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg min-w-[180px]">
-          <button className="w-full text-left px-4 py-3 hover:bg-white/20 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-900 dark:text-white font-light">
+          <button
+            onClick={() => {
+              setCurrentPage('analytics');
+              setShowMenu(false);
+            }}
+            className="w-full text-left px-4 py-3 hover:bg-white/20 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-900 dark:text-white font-light"
+          >
             Analytics
           </button>
-          <button className="w-full text-left px-4 py-3 hover:bg-white/20 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-900 dark:text-white font-light">
+          <button
+            onClick={() => {
+              setCurrentPage('settings');
+              setShowMenu(false);
+            }}
+            className="w-full text-left px-4 py-3 hover:bg-white/20 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-900 dark:text-white font-light"
+          >
             Settings
           </button>
           <button
@@ -116,7 +147,17 @@ export default function HomePage() {
       )}
 
       <main className="relative px-4 py-6">
-        <TaskList tasks={todayTasks} />
+        {currentPage === 'tasks' && <TaskList tasks={todayTasks} />}
+        {currentPage === 'analytics' && (
+          <div className="text-center py-12 text-slate-600 dark:text-slate-400 font-light">
+            Analytics coming soon...
+          </div>
+        )}
+        {currentPage === 'settings' && (
+          <div className="text-center py-12 text-slate-600 dark:text-slate-400 font-light">
+            Settings coming soon...
+          </div>
+        )}
       </main>
 
       <FAB onClick={() => setShowCreateModal(true)} />
