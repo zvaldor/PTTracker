@@ -28,8 +28,8 @@ export function TaskCard({ task }: TaskCardProps) {
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 ${
-        task.status === 'done' ? 'opacity-60' : ''
+      className={`group backdrop-blur-xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-2xl p-4 hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-300 ${
+        task.status === 'done' ? 'opacity-50' : ''
       }`}
       onTouchStart={() => setShowActions(true)}
       onTouchEnd={() => setTimeout(() => setShowActions(false), 2000)}
@@ -37,35 +37,35 @@ export function TaskCard({ task }: TaskCardProps) {
       <div className="flex items-start gap-3">
         <button
           onClick={handleToggleDone}
-          className={`mt-1 ${
-            task.status === 'done' ? 'text-green-500' : 'text-gray-400'
+          className={`mt-0.5 transition-colors duration-200 ${
+            task.status === 'done' ? 'text-emerald-500' : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <CheckCircleIcon className="w-6 h-6" />
+          <CheckCircleIcon className="w-5 h-5" />
         </button>
 
         <div className="flex-1 min-w-0">
-          <h3 className={`font-medium ${task.status === 'done' ? 'line-through' : ''}`}>
+          <h3 className={`font-light text-slate-900 dark:text-white ${task.status === 'done' ? 'line-through' : ''}`}>
             {task.title}
           </h3>
           {task.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 font-light">
               {task.description}
             </p>
           )}
           <div className="flex gap-2 mt-2 flex-wrap">
             {task.desire && (
-              <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+              <span className="text-xs px-2 py-1 backdrop-blur-sm bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg font-light border border-blue-500/20">
                 {task.desire}
               </span>
             )}
             {task.difficultyTshirt && (
-              <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
+              <span className="text-xs px-2 py-1 backdrop-blur-sm bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg font-light border border-purple-500/20">
                 {task.difficultyTshirt}
               </span>
             )}
             {task.carryOverCount > 0 && (
-              <span className="text-xs px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded">
+              <span className="text-xs px-2 py-1 backdrop-blur-sm bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-lg font-light border border-orange-500/20">
                 Moved {task.carryOverCount}x
               </span>
             )}
@@ -75,7 +75,7 @@ export function TaskCard({ task }: TaskCardProps) {
         {showActions && (
           <button
             onClick={handleDelete}
-            className="text-red-500 hover:text-red-600"
+            className="text-red-500 hover:text-red-600 transition-colors"
           >
             <TrashIcon className="w-5 h-5" />
           </button>

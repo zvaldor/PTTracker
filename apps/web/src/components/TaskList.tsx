@@ -10,14 +10,14 @@ interface TaskListProps {
 export function TaskList({ tasks }: TaskListProps) {
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+      <div className="text-center py-12 text-slate-400 dark:text-slate-600 font-light">
         No tasks
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {tasks.map((task) => (
         <TaskCard key={task.id} task={task} />
       ))}

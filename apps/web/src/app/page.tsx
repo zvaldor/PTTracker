@@ -63,28 +63,34 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen pb-20 bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 sticky top-0 z-40">
-        <h1 className="text-xl font-bold mb-3">{format(today, 'EEEE, MMMM d')}</h1>
+    <div className="min-h-screen pb-20 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-900">
+      {/* Subtle grid pattern overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px] dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]"></div>
+
+      {/* Glassmorphism header */}
+      <header className="relative backdrop-blur-xl bg-white/40 dark:bg-white/5 border-b border-white/20 dark:border-white/10 px-4 py-6 sticky top-0 z-40">
+        <h1 className="text-2xl font-light tracking-tight text-slate-900 dark:text-white mb-4">
+          {format(today, 'EEEE, MMMM d')}
+        </h1>
         <PlanModeSelector />
       </header>
 
-      <main className="px-4 py-4 space-y-6">
+      <main className="relative px-4 py-6 space-y-8">
         <section>
-          <h2 className="text-lg font-semibold mb-3">{t('today')}</h2>
+          <h2 className="text-lg font-light text-slate-700 dark:text-slate-300 mb-4">{t('today')}</h2>
           <TaskList tasks={todayTasks} />
         </section>
 
         {recurringFrequentTasks.length > 0 && (
           <section>
-            <h2 className="text-lg font-semibold mb-3">{t('recurringFrequent')}</h2>
+            <h2 className="text-lg font-light text-slate-700 dark:text-slate-300 mb-4">{t('recurringFrequent')}</h2>
             <TaskList tasks={recurringFrequentTasks} />
           </section>
         )}
 
         {backlogTasks.length > 0 && (
           <section>
-            <h2 className="text-lg font-semibold mb-3">{t('backlog')}</h2>
+            <h2 className="text-lg font-light text-slate-700 dark:text-slate-300 mb-4">{t('backlog')}</h2>
             <TaskList tasks={backlogTasks} />
           </section>
         )}
