@@ -6,11 +6,11 @@ import { useTasksStore } from '@/stores/tasksStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useTranslation } from '@/lib/i18n';
 import { LandingPage } from '@/components/LandingPage';
-import { BottomNav } from '@/components/BottomNav';
 import { PlanModeSelector } from '@/components/PlanModeSelector';
 import { TaskList } from '@/components/TaskList';
 import { FAB } from '@/components/FAB';
 import { TaskFormModal } from '@/components/TaskFormModal';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 import { format, getDay } from 'date-fns';
 
 export default function HomePage() {
@@ -21,6 +21,7 @@ export default function HomePage() {
 
   const { tasks, loadTasks } = useTasksStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -32,30 +33,28 @@ export default function HomePage() {
   const today = new Date();
   const todayStr = format(today, 'yyyy-MM-dd');
   const todayWeekday = getDay(today);
-  const todayMonthDay = today.getDate();
+  const currentMonth = format(today, 'MMMM yyyy');
 
+  // For monthly view, show all tasks for current month
   const todayTasks = tasks.filter((task) => {
     if (task.status === 'archived') return false;
 
     if (planMode === 'weekly') {
-      return task.weeklyDay === todayWeekday || task.plannedDate === todayStr;
+      return task.weeklyDay === todayWeekday;
     }
     if (planMode === 'monthly') {
-      return task.monthlyDay === todayMonthDay || task.plannedDate === todayStr;
-    }
-    if (planMode === 'range') {
-      return task.plannedDate === todayStr;
+      // Show all tasks with plannedDateActual in current month
+      if (task.plannedDateActual) {
+        const taskMonth = format(new Date(task.plannedDateActual), 'MMMM yyyy');
+        return taskMonth === currentMonth;
+      }
+      return false;
     }
     return false;
   });
 
-  const recurringFrequentTasks = tasks.filter(
-    (task) => task.isRecurring && (task.occurrencePerWeekEstimate || 0) > 1 && task.status !== 'archived'
-  );
-
-  const backlogTasks = tasks.filter(
-    (task) => !task.weeklyDay && !task.monthlyDay && !task.plannedDate && task.status !== 'archived'
-  );
+  const completedCount = todayTasks.filter(t => t.status === 'done').length;
+  const totalCount = todayTasks.length;
 
   // Show landing page for unauthenticated users
   if (!isAuthenticated) {
@@ -63,42 +62,65 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-900">
       {/* Subtle grid pattern overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px] dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]"></div>
 
-      {/* Glassmorphism header */}
-      <header className="relative backdrop-blur-xl bg-white/40 dark:bg-white/5 border-b border-white/20 dark:border-white/10 px-4 py-6 sticky top-0 z-40">
-        <h1 className="text-2xl font-light tracking-tight text-slate-900 dark:text-white mb-4">
-          {format(today, 'EEEE, MMMM d')}
-        </h1>
-        <PlanModeSelector />
+      {/* Minimal header */}
+      <header className="relative backdrop-blur-xl bg-white/30 dark:bg-white/5 border-b border-white/20 dark:border-white/10 sticky top-0 z-40">
+        <div className="px-4 py-4 flex items-center justify-between">
+          {/* Menu button */}
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 hover:bg-white/20 dark:hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <Bars3Icon className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+          </button>
+
+          {/* Month/Date */}
+          <h1 className="text-lg font-light text-slate-900 dark:text-white">
+            {planMode === 'monthly' ? currentMonth : format(today, 'EEEE, d')}
+          </h1>
+
+          {/* Completed counter */}
+          <div className="text-sm font-light text-slate-600 dark:text-slate-400">
+            {completedCount}/{totalCount}
+          </div>
+        </div>
+
+        {/* Plan mode selector */}
+        <div className="px-4 pb-4">
+          <PlanModeSelector />
+        </div>
       </header>
 
-      <main className="relative px-4 py-6 space-y-8">
-        <section>
-          <h2 className="text-lg font-light text-slate-700 dark:text-slate-300 mb-4">{t('today')}</h2>
-          <TaskList tasks={todayTasks} />
-        </section>
+      {/* Menu dropdown */}
+      {showMenu && (
+        <div className="absolute top-16 left-4 z-50 backdrop-blur-xl bg-white/40 dark:bg-white/10 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg min-w-[180px]">
+          <button className="w-full text-left px-4 py-3 hover:bg-white/20 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-900 dark:text-white font-light">
+            Analytics
+          </button>
+          <button className="w-full text-left px-4 py-3 hover:bg-white/20 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-900 dark:text-white font-light">
+            Settings
+          </button>
+          <button
+            onClick={() => {
+              useAuthStore.getState().logout();
+              setShowMenu(false);
+            }}
+            className="w-full text-left px-4 py-3 hover:bg-white/20 dark:hover:bg-white/10 rounded-xl transition-colors text-red-600 dark:text-red-400 font-light"
+          >
+            Logout
+          </button>
+        </div>
+      )}
 
-        {recurringFrequentTasks.length > 0 && (
-          <section>
-            <h2 className="text-lg font-light text-slate-700 dark:text-slate-300 mb-4">{t('recurringFrequent')}</h2>
-            <TaskList tasks={recurringFrequentTasks} />
-          </section>
-        )}
-
-        {backlogTasks.length > 0 && (
-          <section>
-            <h2 className="text-lg font-light text-slate-700 dark:text-slate-300 mb-4">{t('backlog')}</h2>
-            <TaskList tasks={backlogTasks} />
-          </section>
-        )}
+      <main className="relative px-4 py-6">
+        <TaskList tasks={todayTasks} />
       </main>
 
       <FAB onClick={() => setShowCreateModal(true)} />
       <TaskFormModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
-      <BottomNav />
     </div>
   );
 }

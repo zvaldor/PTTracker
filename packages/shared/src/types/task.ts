@@ -21,9 +21,10 @@ export interface Task {
   status: TaskStatus;
 
   // Planning fields
-  weeklyDay?: number | null;
-  monthlyDay?: number | null;
-  plannedDate?: string | null;
+  weeklyDay?: number | null; // 0-6 (Sun-Sat) for weekly view
+  monthlyDay?: number | null; // 1-31 for monthly view
+  plannedDate?: string | null; // YYYY-MM-DD for specific date
+  plannedDateActual?: string | null; // Actual date when task was planned (e.g., "2025-01-15" for Wed)
   lastPlannedKey?: string | null;
 
   // Metadata
