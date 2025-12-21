@@ -18,6 +18,7 @@ export function TaskCard({ task }: TaskCardProps) {
   const updateTask = useTasksStore((s) => s.updateTask);
   const deleteTask = useTasksStore((s) => s.deleteTask);
   const planMode = useSettingsStore((s) => s.planMode);
+  const visibleTags = useSettingsStore((s) => s.visibleTags);
   const [showActions, setShowActions] = useState(false);
   const [showWeekdayPicker, setShowWeekdayPicker] = useState(false);
   const [showDesirePicker, setShowDesirePicker] = useState(false);
@@ -103,41 +104,47 @@ export function TaskCard({ task }: TaskCardProps) {
             )}
           </div>
 
-          {/* Fixed-width tag columns */}
+          {/* Fixed-width tag columns - only show visible tags */}
           <div className="flex items-center gap-1 text-xs font-light">
-            {/* Weekday tag - fixed width */}
-            <button
-              ref={weekdayRef}
-              onClick={() => setShowWeekdayPicker(!showWeekdayPicker)}
-              className="w-14 text-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              {displayDay || '+day'}
-            </button>
+            {/* Weekday tag - only if visible */}
+            {visibleTags.weekday && (
+              <button
+                ref={weekdayRef}
+                onClick={() => setShowWeekdayPicker(!showWeekdayPicker)}
+                className="w-14 text-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                {displayDay || '+day'}
+              </button>
+            )}
 
-            {/* Desire tag - fixed width */}
-            <button
-              ref={desireRef}
-              onClick={() => setShowDesirePicker(!showDesirePicker)}
-              className="w-16 text-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-            >
-              {task.desire || '+desire'}
-            </button>
+            {/* Desire tag - only if visible */}
+            {visibleTags.desire && (
+              <button
+                ref={desireRef}
+                onClick={() => setShowDesirePicker(!showDesirePicker)}
+                className="w-16 text-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              >
+                {task.desire || '+desire'}
+              </button>
+            )}
 
-            {/* Difficulty tag - fixed width */}
-            <button
-              ref={difficultyRef}
-              onClick={() => setShowDifficultyPicker(!showDifficultyPicker)}
-              className="w-10 text-center text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-            >
-              {task.difficultyTshirt || '+diff'}
-            </button>
+            {/* Difficulty tag - only if visible */}
+            {visibleTags.difficulty && (
+              <button
+                ref={difficultyRef}
+                onClick={() => setShowDifficultyPicker(!showDifficultyPicker)}
+                className="w-10 text-center text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+              >
+                {task.difficultyTshirt || '+diff'}
+              </button>
+            )}
 
-            {/* Carryover count - fixed width */}
-            <div className="w-10 text-center">
-              {task.carryOverCount > 0 && (
+            {/* Carryover count - only if visible */}
+            {visibleTags.carryover && task.carryOverCount > 0 && (
+              <div className="w-10 text-center">
                 <span className="text-orange-600 dark:text-orange-400">↻{task.carryOverCount}</span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Delete button */}

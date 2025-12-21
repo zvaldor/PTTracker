@@ -18,23 +18,23 @@ const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export function TaskFormModal({ isOpen, onClose }: TaskFormModalProps) {
   const createTask = useTasksStore((s) => s.createTask);
   const locale = useSettingsStore((s) => s.locale);
-  const planMode = useSettingsStore((s) => s.planMode);
+  const visibleTags = useSettingsStore((s) => s.visibleTags);
   const { t } = useTranslation(locale);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [difficulty, setDifficulty] = useState<DifficultyTshirt>('M');
-  const [desire, setDesire] = useState<Desire>('med');
-  const [weekday, setWeekday] = useState<number>(new Date().getDay());
+  const [difficulty, setDifficulty] = useState<DifficultyTshirt | undefined>(undefined);
+  const [desire, setDesire] = useState<Desire | undefined>(undefined);
+  const [weekday, setWeekday] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setTitle('');
       setDescription('');
-      setDifficulty('M');
-      setDesire('med');
-      setWeekday(new Date().getDay());
+      setDifficulty(undefined);
+      setDesire(undefined);
+      setWeekday(undefined);
     }
   }, [isOpen]);
 
@@ -43,18 +43,28 @@ export function TaskFormModal({ isOpen, onClose }: TaskFormModalProps) {
     setLoading(true);
 
     try {
-      const today = new Date();
-      const selectedDate = new Date(today);
-      selectedDate.setDate(today.getDate() + ((weekday - today.getDay() + 7) % 7));
-
       const taskData: CreateTaskDto = {
         title,
-        description,
-        difficultyTshirt: difficulty,
-        desire,
-        weeklyDay: weekday,
-        plannedDateActual: format(selectedDate, 'yyyy-MM-dd'),
+        description: description || undefined,
       };
+
+      // Only add optional fields if they are set
+      if (weekday !== undefined) {
+        const today = new Date();
+        const selectedDate = new Date(today);
+        selectedDate.setDate(today.getDate() + ((weekday - today.getDay() + 7) % 7));
+
+        taskData.weeklyDay = weekday;
+        taskData.plannedDateActual = format(selectedDate, 'yyyy-MM-dd');
+      }
+
+      if (difficulty) {
+        taskData.difficultyTshirt = difficulty;
+      }
+
+      if (desire) {
+        taskData.desire = desire;
+      }
 
       await createTask(taskData);
       onClose();
@@ -109,68 +119,80 @@ export function TaskFormModal({ isOpen, onClose }: TaskFormModalProps) {
             />
           </div>
 
-          {/* Weekday */}
-          <div>
-            <label className="block text-sm font-light mb-2 text-slate-700 dark:text-slate-300">Day of Week</label>
-            <div className="grid grid-cols-7 gap-2">
-              {WEEKDAY_SHORT.map((day, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setWeekday(index)}
-                  className={`py-2 px-2 rounded-lg text-xs font-light transition-all ${
-                    weekday === index
-                      ? 'bg-white/60 dark:bg-white/10 text-slate-900 dark:text-white shadow-sm border border-white/30'
-                      : 'bg-white/20 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-white/10'
-                  }`}
-                >
-                  {day}
-                </button>
-              ))}
+          {/* Weekday - only if visible */}
+          {visibleTags.weekday && (
+            <div>
+              <label className="block text-sm font-light mb-2 text-slate-700 dark:text-slate-300">
+                Day of Week <span className="text-slate-400">(optional)</span>
+              </label>
+              <div className="grid grid-cols-7 gap-2">
+                {WEEKDAY_SHORT.map((day, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setWeekday(weekday === index ? undefined : index)}
+                    className={`py-2 px-2 rounded-lg text-xs font-light transition-all ${
+                      weekday === index
+                        ? 'bg-white/60 dark:bg-white/10 text-slate-900 dark:text-white shadow-sm border border-white/30'
+                        : 'bg-white/20 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-white/10'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Difficulty */}
-          <div>
-            <label className="block text-sm font-light mb-2 text-slate-700 dark:text-slate-300">{t('difficulty')}</label>
-            <div className="grid grid-cols-4 gap-2">
-              {(['S', 'M', 'L', 'XL'] as DifficultyTshirt[]).map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDifficulty(d)}
-                  className={`py-3 px-4 rounded-xl font-light transition-all ${
-                    difficulty === d
-                      ? 'bg-purple-500/30 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 shadow-sm'
-                      : 'bg-white/20 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-white/10'
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
+          {/* Difficulty - only if visible */}
+          {visibleTags.difficulty && (
+            <div>
+              <label className="block text-sm font-light mb-2 text-slate-700 dark:text-slate-300">
+                {t('difficulty')} <span className="text-slate-400">(optional)</span>
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {(['S', 'M', 'L', 'XL'] as DifficultyTshirt[]).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDifficulty(difficulty === d ? undefined : d)}
+                    className={`py-3 px-4 rounded-xl font-light transition-all ${
+                      difficulty === d
+                        ? 'bg-purple-500/30 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 shadow-sm'
+                        : 'bg-white/20 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-white/10'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Desire */}
-          <div>
-            <label className="block text-sm font-light mb-2 text-slate-700 dark:text-slate-300">{t('desire')}</label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['low', 'med', 'high'] as Desire[]).map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDesire(d)}
-                  className={`py-3 px-4 rounded-xl capitalize font-light transition-all ${
-                    desire === d
-                      ? 'bg-blue-500/30 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 shadow-sm'
-                      : 'bg-white/20 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-white/10'
-                  }`}
-                >
-                  {t(d)}
-                </button>
-              ))}
+          {/* Desire - only if visible */}
+          {visibleTags.desire && (
+            <div>
+              <label className="block text-sm font-light mb-2 text-slate-700 dark:text-slate-300">
+                {t('desire')} <span className="text-slate-400">(optional)</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['low', 'med', 'high'] as Desire[]).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDesire(desire === d ? undefined : d)}
+                    className={`py-3 px-4 rounded-xl capitalize font-light transition-all ${
+                      desire === d
+                        ? 'bg-blue-500/30 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 shadow-sm'
+                        : 'bg-white/20 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-white/10'
+                    }`}
+                  >
+                    {t(d)}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">

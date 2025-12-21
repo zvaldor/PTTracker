@@ -21,16 +21,26 @@ export default function HomePage() {
   const planMode = useSettingsStore((s) => s.planMode);
   const { t } = useTranslation(locale);
 
-  const { tasks, loadTasks } = useTasksStore();
+  const { tasks, loadTasks, sync } = useTasksStore();
+  const syncMode = useSettingsStore((s) => s.syncMode);
+  const setPlanMode = useSettingsStore((s) => s.setPlanMode);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [currentPage, setCurrentPage] = useState<'tasks' | 'analytics' | 'settings'>('tasks');
 
+  // Auto-sync on page load and every 5 minutes
   useEffect(() => {
     if (isAuthenticated) {
       loadTasks();
+      if (syncMode === 'cloud') {
+        sync(); // Initial sync
+        const interval = setInterval(() => {
+          sync();
+        }, 5 * 60 * 1000); // 5 minutes
+        return () => clearInterval(interval);
+      }
     }
-  }, [isAuthenticated, loadTasks]);
+  }, [isAuthenticated, syncMode, loadTasks, sync]);
 
   // Get today's tasks based on plan mode
   const today = new Date();
@@ -89,13 +99,19 @@ export default function HomePage() {
             </button>
           )}
 
-          {/* Month/Date or Page Title */}
-          <h1 className="text-lg font-light text-slate-900 dark:text-white">
-            {currentPage === 'tasks'
-              ? (planMode === 'monthly' ? currentMonth : format(today, 'EEEE, d'))
-              : currentPage.charAt(0).toUpperCase() + currentPage.slice(1)
-            }
-          </h1>
+          {/* Month/Date or Page Title - Clickable to toggle mode */}
+          {currentPage === 'tasks' ? (
+            <button
+              onClick={() => setPlanMode(planMode === 'weekly' ? 'monthly' : 'weekly')}
+              className="text-lg font-light text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+            >
+              {planMode === 'monthly' ? currentMonth : format(today, 'EEEE, d')}
+            </button>
+          ) : (
+            <h1 className="text-lg font-light text-slate-900 dark:text-white">
+              {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
+            </h1>
+          )}
 
           {/* Completed counter (only on tasks page) */}
           {currentPage === 'tasks' ? (
@@ -106,13 +122,6 @@ export default function HomePage() {
             <div className="w-12" />
           )}
         </div>
-
-        {/* Plan mode selector (only on tasks page) */}
-        {currentPage === 'tasks' && (
-          <div className="px-4 pb-4">
-            <PlanModeSelector />
-          </div>
-        )}
       </header>
 
       {/* Menu dropdown */}
