@@ -33,6 +33,16 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: response.refreshToken,
           isAuthenticated: true,
         });
+
+        // Trigger migration and sync in next tick to avoid circular dependency
+        setTimeout(() => {
+          import('./tasksStore').then(({ useTasksStore }) => {
+            const store = useTasksStore.getState();
+            store.migrateLocalTasks(response.user.id).then(() => {
+              store.sync();
+            });
+          });
+        }, 0);
       },
 
       register: async (email, password, locale = 'en') => {
@@ -44,6 +54,16 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: response.refreshToken,
           isAuthenticated: true,
         });
+
+        // Trigger migration and sync in next tick
+        setTimeout(() => {
+          import('./tasksStore').then(({ useTasksStore }) => {
+            const store = useTasksStore.getState();
+            store.migrateLocalTasks(response.user.id).then(() => {
+              store.sync();
+            });
+          });
+        }, 0);
       },
 
       requestMagicLink: async (email) => {
@@ -59,6 +79,16 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: response.refreshToken,
           isAuthenticated: true,
         });
+
+        // Trigger migration and sync in next tick
+        setTimeout(() => {
+          import('./tasksStore').then(({ useTasksStore }) => {
+            const store = useTasksStore.getState();
+            store.migrateLocalTasks(response.user.id).then(() => {
+              store.sync();
+            });
+          });
+        }, 0);
       },
 
       logout: () => {
