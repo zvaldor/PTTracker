@@ -104,7 +104,7 @@ export function TaskCard({ task }: TaskCardProps) {
           </div>
 
           {/* Fixed-width tag columns */}
-          <div className="flex items-center gap-2 text-xs font-light">
+          <div className="flex items-center gap-1 text-xs font-light">
             {/* Weekday tag - fixed width */}
             <button
               ref={weekdayRef}

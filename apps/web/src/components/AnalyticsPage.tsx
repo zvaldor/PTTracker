@@ -1,64 +1,106 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useTasksStore } from '@/stores/tasksStore';
 import { useTranslation } from '@/lib/i18n';
-import { api } from '@/lib/api';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export function AnalyticsPage() {
   const locale = useSettingsStore((s) => s.locale);
   const { t } = useTranslation(locale);
+  const tasks = useTasksStore((s) => s.tasks);
 
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [timeWindow, setTimeWindow] = useState('thisWeek');
 
-  useEffect(() => {
-    loadAnalytics();
-  }, [timeWindow]);
+  const analytics = useMemo(() => {
+    const now = new Date();
+    let startDate: Date;
+    let endDate = new Date(now);
 
-  const loadAnalytics = async () => {
-    try {
-      setLoading(true);
-      const now = new Date();
-      let startDate: string;
-      let endDate = now.toISOString().split('T')[0];
-
-      if (timeWindow === 'thisWeek') {
-        const start = new Date(now);
-        start.setDate(now.getDate() - 7);
-        startDate = start.toISOString().split('T')[0];
-      } else if (timeWindow === 'lastWeek') {
-        const end = new Date(now);
-        end.setDate(now.getDate() - 7);
-        endDate = end.toISOString().split('T')[0];
-        const start = new Date(end);
-        start.setDate(end.getDate() - 7);
-        startDate = start.toISOString().split('T')[0];
-      } else if (timeWindow === 'thisMonth') {
-        const start = new Date(now.getFullYear(), now.getMonth(), 1);
-        startDate = start.toISOString().split('T')[0];
-      } else {
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      }
-
-      const data = await api.getAnalytics({ startDate, endDate });
-      setAnalytics(data);
-    } catch (error) {
-      console.error('Failed to load analytics:', error);
-    } finally {
-      setLoading(false);
+    if (timeWindow === 'thisWeek') {
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 7);
+    } else if (timeWindow === 'lastWeek') {
+      endDate = new Date(now);
+      endDate.setDate(now.getDate() - 7);
+      startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - 7);
+    } else if (timeWindow === 'thisMonth') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else {
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
-  };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-slate-600 dark:text-slate-400 font-light">{t('loading')}</div>
-      </div>
-    );
-  }
+    // Filter tasks by date range
+    const filteredTasks = tasks.filter(task => {
+      if (!task.plannedDateActual) return false;
+      const taskDate = new Date(task.plannedDateActual);
+      return taskDate >= startDate && taskDate <= endDate;
+    });
+
+    // Calculate planned vs done per day
+    const plannedVsDone: Array<{ date: string; planned: number; done: number }> = [];
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      const dayTasks = filteredTasks.filter(t => t.plannedDateActual === dateStr);
+      const done = dayTasks.filter(t => t.status === 'done').length;
+
+      plannedVsDone.push({
+        date: dateStr,
+        planned: dayTasks.length,
+        done,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Calculate completion rate
+    const totalPlanned = plannedVsDone.reduce((sum, d) => sum + d.planned, 0);
+    const totalDone = plannedVsDone.reduce((sum, d) => sum + d.done, 0);
+    const completionRate = totalPlanned > 0 ? (totalDone / totalPlanned) * 100 : 0;
+
+    // Completion by category (mock data since we don't have categories in current schema)
+    const completionByCategory = [
+      { categoryName: 'Work', count: filteredTasks.filter(t => t.status === 'done').length },
+    ];
+
+    // Carryover trend
+    const carryoverTrend = plannedVsDone.map(day => {
+      const dayTasks = filteredTasks.filter(t => t.plannedDateActual === day.date);
+      const avgCarryovers = dayTasks.length > 0
+        ? dayTasks.reduce((sum, t) => sum + (t.carryOverCount || 0), 0) / dayTasks.length
+        : 0;
+
+      return {
+        date: day.date,
+        averageCarryovers: avgCarryovers,
+      };
+    });
+
+    // Top carryovers
+    const topCarryovers = filteredTasks
+      .filter(t => (t.carryOverCount || 0) > 0)
+      .sort((a, b) => (b.carryOverCount || 0) - (a.carryOverCount || 0))
+      .slice(0, 10)
+      .map(t => ({
+        taskId: t.id,
+        title: t.title,
+        carryOverCount: t.carryOverCount || 0,
+      }));
+
+    return {
+      weeklyEfficiency: {
+        plannedVsDone,
+        completionRate,
+      },
+      completionByCategory,
+      carryoverTrend,
+      topCarryovers,
+    };
+  }, [tasks, timeWindow]);
 
   const COLORS = ['#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
 
