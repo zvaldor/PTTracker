@@ -83,10 +83,17 @@ export function TaskCard({ task }: TaskCardProps) {
     const today = new Date();
     const targetDate = new Date(today.getFullYear(), today.getMonth(), day);
     const weekday = targetDate.getDay();
+    console.log('handleSetMonthDay called', {
+      day,
+      targetDate: format(targetDate, 'yyyy-MM-dd'),
+      weekday,
+      taskId: task.id
+    });
     await updateTask(task.id, {
       weeklyDay: weekday,
       plannedDateActual: format(targetDate, 'yyyy-MM-dd'),
     });
+    console.log('updateTask completed');
     setShowWeekdayPicker(false);
   };
 
