@@ -97,14 +97,17 @@ export function TaskCard({ task }: TaskCardProps) {
     setShowDifficultyPicker(false);
   };
 
-  // Calculate display day
+  // Calculate display day and date
   let displayDay = '';
+  let displayDate = '';
+
   if (task.plannedDateActual) {
-    // If task has a specific date, show date + weekday
+    // If task has a specific date
     const date = parse(task.plannedDateActual, 'yyyy-MM-dd', new Date());
     const day = format(date, 'd');
     const weekday = date.getDay();
-    displayDay = `${day} ${WEEKDAY_SHORT[weekday]}`;
+    displayDay = WEEKDAY_SHORT[weekday];
+    displayDate = day;
   } else if (task.weeklyDay !== null && task.weeklyDay !== undefined) {
     // If task only has weekday (legacy), show just weekday
     displayDay = WEEKDAY_SHORT[task.weeklyDay];
@@ -145,17 +148,34 @@ export function TaskCard({ task }: TaskCardProps) {
 
           {/* Fixed-width tag columns - only show visible tags */}
           <div className="flex items-center gap-1 text-xs font-light">
+            {/* Date tag (only in monthly mode) */}
+            {visibleTags.weekday && planMode === 'monthly' && (
+              task.status === 'done' ? (
+                <div className="w-8 text-center text-orange-600 dark:text-orange-400">
+                  {displayDate || '+d'}
+                </div>
+              ) : (
+                <button
+                  ref={weekdayRef}
+                  onClick={() => setShowWeekdayPicker(!showWeekdayPicker)}
+                  className="w-8 text-center text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
+                >
+                  {displayDate || '+d'}
+                </button>
+              )
+            )}
+
             {/* Weekday tag - only if visible */}
             {visibleTags.weekday && (
               task.status === 'done' ? (
-                <div className="w-20 text-center text-slate-600 dark:text-slate-400">
+                <div className="w-12 text-center text-slate-600 dark:text-slate-400">
                   {displayDay || '+day'}
                 </div>
               ) : (
                 <button
                   ref={weekdayRef}
                   onClick={() => setShowWeekdayPicker(!showWeekdayPicker)}
-                  className="w-20 text-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="w-12 text-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   {displayDay || '+day'}
                 </button>
