@@ -57,20 +57,32 @@ export default function HomePage() {
   const todayWeekday = getDay(today);
   const currentMonth = format(today, 'MMMM yyyy');
 
+  // Calculate current week range (Monday to Sunday)
+  const startOfWeek = new Date(today);
+  const dayOfWeek = today.getDay();
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days, else go to Monday
+  startOfWeek.setDate(today.getDate() + diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
   // Filter tasks based on plan mode
   const todayTasks = tasks.filter((task) => {
     if (task.status === 'archived') return false;
 
     if (planMode === 'weekly') {
-      // Show tasks for today's weekday, or tasks without weekday set
-      if (task.weeklyDay === null || task.weeklyDay === undefined) {
-        return true; // Show tasks without weekday
+      // In weekly mode, show all tasks in current week (Mon-Sun)
+      if (!task.plannedDateActual) {
+        return true; // Show tasks without date
       }
-      return task.weeklyDay === todayWeekday;
+      const taskDate = new Date(task.plannedDateActual);
+      return taskDate >= startOfWeek && taskDate <= endOfWeek;
     }
 
     if (planMode === 'monthly') {
-      // Show tasks for current month, or tasks without date set
+      // In monthly mode, show all tasks in current month
       if (!task.plannedDateActual) {
         return true; // Show tasks without date
       }

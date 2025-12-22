@@ -99,14 +99,14 @@ export function TaskCard({ task }: TaskCardProps) {
 
   // Calculate display day
   let displayDay = '';
-  if (planMode === 'monthly' && task.plannedDateActual) {
-    // In monthly mode, show date + weekday
+  if (task.plannedDateActual) {
+    // If task has a specific date, show date + weekday
     const date = parse(task.plannedDateActual, 'yyyy-MM-dd', new Date());
     const day = format(date, 'd');
     const weekday = date.getDay();
     displayDay = `${day} ${WEEKDAY_SHORT[weekday]}`;
   } else if (task.weeklyDay !== null && task.weeklyDay !== undefined) {
-    // In weekly mode, show just weekday
+    // If task only has weekday (legacy), show just weekday
     displayDay = WEEKDAY_SHORT[task.weeklyDay];
   }
 
