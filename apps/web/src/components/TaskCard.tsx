@@ -99,13 +99,15 @@ export function TaskCard({ task }: TaskCardProps) {
 
   // Calculate display day
   let displayDay = '';
-  if (task.weeklyDay !== null && task.weeklyDay !== undefined) {
+  if (planMode === 'monthly' && task.plannedDateActual) {
+    // In monthly mode, show date + weekday
+    const date = parse(task.plannedDateActual, 'yyyy-MM-dd', new Date());
+    const day = format(date, 'd');
+    const weekday = date.getDay();
+    displayDay = `${day} ${WEEKDAY_SHORT[weekday]}`;
+  } else if (task.weeklyDay !== null && task.weeklyDay !== undefined) {
+    // In weekly mode, show just weekday
     displayDay = WEEKDAY_SHORT[task.weeklyDay];
-    if (planMode === 'monthly' && task.plannedDateActual) {
-      const date = parse(task.plannedDateActual, 'yyyy-MM-dd', new Date());
-      const day = format(date, 'd');
-      displayDay = `${day} ${displayDay}`;
-    }
   }
 
   return (
@@ -215,99 +217,166 @@ export function TaskCard({ task }: TaskCardProps) {
       </div>
 
       {/* Weekday/Date picker popup - positioned relative to button */}
-      {showWeekdayPicker && weekdayRef.current && (
-        <div
-          ref={weekdayPickerRef}
-          className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
-          style={{
-            top: `${weekdayRef.current.getBoundingClientRect().bottom + 8}px`,
-            left: `${weekdayRef.current.getBoundingClientRect().left}px`,
-          }}
-        >
-          {planMode === 'weekly' ? (
-            <div className="grid grid-cols-7 gap-1 min-w-[280px]">
-              {WEEKDAY_FULL.map((day, index) => (
+      {showWeekdayPicker && weekdayRef.current && (() => {
+        const rect = weekdayRef.current.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const pickerWidth = planMode === 'weekly' ? 280 : 300;
+        const pickerHeight = planMode === 'weekly' ? 100 : 280;
+
+        // Calculate position - keep picker on screen
+        let left = rect.left;
+        let top = rect.bottom + 8;
+
+        // Adjust horizontal position if too close to right edge
+        if (left + pickerWidth > windowWidth - 16) {
+          left = windowWidth - pickerWidth - 16;
+        }
+        // Adjust horizontal position if too close to left edge
+        if (left < 16) {
+          left = 16;
+        }
+
+        // Adjust vertical position if too close to bottom edge
+        if (top + pickerHeight > windowHeight - 16) {
+          top = rect.top - pickerHeight - 8;
+        }
+
+        return (
+          <div
+            ref={weekdayPickerRef}
+            className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-3 shadow-lg"
+            style={{ top: `${top}px`, left: `${left}px` }}
+          >
+            {planMode === 'weekly' ? (
+              <div className="grid grid-cols-7 gap-2 min-w-[280px]">
+                {WEEKDAY_FULL.map((day, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSetWeekday(index)}
+                    className="px-3 py-2 text-xs font-light hover:bg-white/60 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-900 dark:text-white"
+                  >
+                    {WEEKDAY_SHORT[index]}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-7 gap-2">
+                {/* Generate calendar for current month */}
+                {(() => {
+                  const today = new Date();
+                  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+                  const days = [];
+                  for (let i = 1; i <= daysInMonth; i++) {
+                    days.push(i);
+                  }
+                  return days.map((day) => (
+                    <button
+                      key={day}
+                      onClick={() => handleSetMonthDay(day)}
+                      className="w-10 h-10 text-sm font-light hover:bg-white/60 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-900 dark:text-white flex items-center justify-center"
+                    >
+                      {day}
+                    </button>
+                  ));
+                })()}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Desire picker popup - positioned relative to button */}
+      {showDesirePicker && desireRef.current && (() => {
+        const rect = desireRef.current.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const pickerWidth = 120;
+        const pickerHeight = 140;
+
+        // Calculate position - keep picker on screen
+        let left = rect.left;
+        let top = rect.bottom + 8;
+
+        // Adjust horizontal position if too close to right edge
+        if (left + pickerWidth > windowWidth - 16) {
+          left = windowWidth - pickerWidth - 16;
+        }
+        if (left < 16) {
+          left = 16;
+        }
+
+        // Adjust vertical position if too close to bottom edge
+        if (top + pickerHeight > windowHeight - 16) {
+          top = rect.top - pickerHeight - 8;
+        }
+
+        return (
+          <div
+            ref={desirePickerRef}
+            className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
+            style={{ top: `${top}px`, left: `${left}px` }}
+          >
+            <div className="flex flex-col gap-1 min-w-[100px]">
+              {(['low', 'med', 'high'] as Desire[]).map((desire) => (
                 <button
-                  key={index}
-                  onClick={() => handleSetWeekday(index)}
-                  className="px-3 py-2 text-xs font-light hover:bg-white/60 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-900 dark:text-white"
+                  key={desire}
+                  onClick={() => handleSetDesire(desire)}
+                  className="px-4 py-2 text-xs font-light hover:bg-white/60 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-900 dark:text-white text-left"
                 >
-                  {WEEKDAY_SHORT[index]}
+                  {desire}
                 </button>
               ))}
             </div>
-          ) : (
-            <div className="grid grid-cols-7 gap-1 p-2">
-              {/* Generate calendar for current month */}
-              {(() => {
-                const today = new Date();
-                const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-                const days = [];
-                for (let i = 1; i <= daysInMonth; i++) {
-                  days.push(i);
-                }
-                return days.map((day) => (
-                  <button
-                    key={day}
-                    onClick={() => handleSetMonthDay(day)}
-                    className="w-8 h-8 text-xs font-light hover:bg-white/60 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-900 dark:text-white flex items-center justify-center"
-                  >
-                    {day}
-                  </button>
-                ));
-              })()}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Desire picker popup - positioned relative to button */}
-      {showDesirePicker && desireRef.current && (
-        <div
-          ref={desirePickerRef}
-          className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
-          style={{
-            top: `${desireRef.current.getBoundingClientRect().bottom + 8}px`,
-            left: `${desireRef.current.getBoundingClientRect().left}px`,
-          }}
-        >
-          <div className="flex flex-col gap-1 min-w-[100px]">
-            {(['low', 'med', 'high'] as Desire[]).map((desire) => (
-              <button
-                key={desire}
-                onClick={() => handleSetDesire(desire)}
-                className="px-4 py-2 text-xs font-light hover:bg-white/60 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-900 dark:text-white text-left"
-              >
-                {desire}
-              </button>
-            ))}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Difficulty picker popup - positioned relative to button */}
-      {showDifficultyPicker && difficultyRef.current && (
-        <div
-          ref={difficultyPickerRef}
-          className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
-          style={{
-            top: `${difficultyRef.current.getBoundingClientRect().bottom + 8}px`,
-            left: `${difficultyRef.current.getBoundingClientRect().left}px`,
-          }}
-        >
-          <div className="flex gap-1">
-            {(['S', 'M', 'L', 'XL'] as DifficultyTshirt[]).map((diff) => (
-              <button
-                key={diff}
-                onClick={() => handleSetDifficulty(diff)}
-                className="px-3 py-2 text-xs font-light hover:bg-white/60 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-900 dark:text-white"
-              >
-                {diff}
-              </button>
-            ))}
+      {showDifficultyPicker && difficultyRef.current && (() => {
+        const rect = difficultyRef.current.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const pickerWidth = 180;
+        const pickerHeight = 60;
+
+        // Calculate position - keep picker on screen
+        let left = rect.left;
+        let top = rect.bottom + 8;
+
+        // Adjust horizontal position if too close to right edge
+        if (left + pickerWidth > windowWidth - 16) {
+          left = windowWidth - pickerWidth - 16;
+        }
+        if (left < 16) {
+          left = 16;
+        }
+
+        // Adjust vertical position if too close to bottom edge
+        if (top + pickerHeight > windowHeight - 16) {
+          top = rect.top - pickerHeight - 8;
+        }
+
+        return (
+          <div
+            ref={difficultyPickerRef}
+            className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
+            style={{ top: `${top}px`, left: `${left}px` }}
+          >
+            <div className="flex gap-1">
+              {(['S', 'M', 'L', 'XL'] as DifficultyTshirt[]).map((diff) => (
+                <button
+                  key={diff}
+                  onClick={() => handleSetDifficulty(diff)}
+                  className="px-3 py-2 text-xs font-light hover:bg-white/60 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-900 dark:text-white"
+                >
+                  {diff}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </>
   );
 }
