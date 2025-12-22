@@ -68,16 +68,33 @@ export const useTasksStore = create<TasksState>((set, get) => ({
 
   updateTask: async (id, taskDto) => {
     try {
-      await db.tasks.update(id, {
+      console.log('updateTask in store called', { id, taskDto });
+
+      const updateData = {
         ...taskDto,
         updatedAt: new Date(),
         _dirty: true,
-      });
+      };
+      console.log('updateData to be saved:', updateData);
+
+      const updated = await db.tasks.update(id, updateData);
+      console.log('db.tasks.update result (number of rows updated):', updated);
+
+      // Read the task back to verify
+      const taskAfterUpdate = await db.tasks.get(id);
+      console.log('Task after update from db:', taskAfterUpdate);
+
       await get().loadTasks();
+      console.log('loadTasks completed');
+
+      // Check if task is in state
+      const taskInState = get().tasks.find(t => t.id === id);
+      console.log('Task in state after loadTasks:', taskInState);
 
       // Try to sync
       get().sync().catch(console.error);
     } catch (error: any) {
+      console.error('updateTask error:', error);
       set({ error: error.message });
     }
   },
