@@ -46,6 +46,16 @@ export class ApiClient {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Request failed' }));
       console.error('❌ Request failed:', endpoint, response.status, error);
+
+      // If 401 Unauthorized, token might be expired - force logout
+      if (response.status === 401 && endpoint !== '/auth/login' && endpoint !== '/auth/register') {
+        console.warn('🔓 Token expired or invalid, logging out...');
+        // Import authStore dynamically to avoid circular dependency
+        import('@/stores/authStore').then(({ useAuthStore }) => {
+          useAuthStore.getState().logout();
+        });
+      }
+
       throw new Error(error.message || 'Request failed');
     }
 
