@@ -32,10 +32,19 @@ export function AnalyticsPage() {
       startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
-    // Filter tasks by date range
+    // Filter tasks by date range - use createdAt or updatedAt if plannedDateActual is missing
     const filteredTasks = tasks.filter(task => {
-      if (!task.plannedDateActual) return false;
-      const taskDate = new Date(task.plannedDateActual);
+      if (task.status === 'archived') return false;
+
+      const taskDate = task.plannedDateActual
+        ? new Date(task.plannedDateActual)
+        : task.updatedAt
+        ? new Date(task.updatedAt)
+        : task.createdAt
+        ? new Date(task.createdAt)
+        : null;
+
+      if (!taskDate) return false;
       return taskDate >= startDate && taskDate <= endDate;
     });
 
@@ -45,7 +54,12 @@ export function AnalyticsPage() {
 
     while (currentDate <= endDate) {
       const dateStr = currentDate.toISOString().split('T')[0];
-      const dayTasks = filteredTasks.filter(t => t.plannedDateActual === dateStr);
+      const dayTasks = filteredTasks.filter(t => {
+        const taskDateStr = t.plannedDateActual ||
+          (t.updatedAt ? new Date(t.updatedAt).toISOString().split('T')[0] : null) ||
+          (t.createdAt ? new Date(t.createdAt).toISOString().split('T')[0] : null);
+        return taskDateStr === dateStr;
+      });
       const done = dayTasks.filter(t => t.status === 'done').length;
 
       plannedVsDone.push({
@@ -69,7 +83,12 @@ export function AnalyticsPage() {
 
     // Carryover trend
     const carryoverTrend = plannedVsDone.map(day => {
-      const dayTasks = filteredTasks.filter(t => t.plannedDateActual === day.date);
+      const dayTasks = filteredTasks.filter(t => {
+        const taskDateStr = t.plannedDateActual ||
+          (t.updatedAt ? new Date(t.updatedAt).toISOString().split('T')[0] : null) ||
+          (t.createdAt ? new Date(t.createdAt).toISOString().split('T')[0] : null);
+        return taskDateStr === day.date;
+      });
       const avgCarryovers = dayTasks.length > 0
         ? dayTasks.reduce((sum, t) => sum + (t.carryOverCount || 0), 0) / dayTasks.length
         : 0;
