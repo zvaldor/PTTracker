@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useTasksStore } from '@/stores/tasksStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useTranslation } from '@/lib/i18n';
+import { api } from '@/lib/api';
 import { LandingPage } from '@/components/LandingPage';
 import { PlanModeSelector } from '@/components/PlanModeSelector';
 import { TaskList } from '@/components/TaskList';
@@ -17,6 +18,7 @@ import { format, getDay } from 'date-fns';
 
 export default function HomePage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const locale = useSettingsStore((s) => s.locale);
   const planMode = useSettingsStore((s) => s.planMode);
   const { t } = useTranslation(locale);
@@ -27,6 +29,13 @@ export default function HomePage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [currentPage, setCurrentPage] = useState<'tasks' | 'analytics' | 'settings'>('tasks');
+
+  // Initialize API token on mount
+  useEffect(() => {
+    if (accessToken) {
+      api.setToken(accessToken);
+    }
+  }, [accessToken]);
 
   // Auto-sync on page load and every 5 minutes
   useEffect(() => {
