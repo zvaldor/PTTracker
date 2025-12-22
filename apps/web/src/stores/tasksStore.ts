@@ -101,7 +101,6 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     try {
       const isAuthenticated = useAuthStore.getState().isAuthenticated;
       if (!isAuthenticated) {
-        console.log('Skipping sync: not authenticated');
         return;
       }
 
@@ -148,9 +147,8 @@ export const useTasksStore = create<TasksState>((set, get) => ({
 
       set({ lastSyncAt: new Date(response.lastSyncAt) });
       await get().loadTasks();
-      console.log('✅ Sync completed successfully');
     } catch (error) {
-      console.error('❌ Sync failed:', error);
+      console.error('Sync failed:', error);
     }
   },
 
@@ -160,8 +158,6 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       const localTasks = await db.tasks.where('userId').equals('local').toArray();
 
       if (localTasks.length > 0) {
-        console.log(`🔄 Migrating ${localTasks.length} local tasks to user ${userId}`);
-
         await db.transaction('rw', db.tasks, async () => {
           for (const task of localTasks) {
             await db.tasks.update(task.id, {

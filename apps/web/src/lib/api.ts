@@ -4,21 +4,17 @@ export class ApiClient {
   private token: string | null = null;
 
   setToken(token: string | null) {
-    console.log('💾 Setting token:', token ? `${token.substring(0, 20)}...` : 'null');
     this.token = token;
     if (token) {
       localStorage.setItem('accessToken', token);
-      console.log('✅ Token saved to localStorage');
     } else {
       localStorage.removeItem('accessToken');
-      console.log('🗑️ Token removed from localStorage');
     }
   }
 
   getToken() {
     if (!this.token) {
       this.token = localStorage.getItem('accessToken');
-      console.log('📦 Getting token from localStorage:', this.token ? `${this.token.substring(0, 20)}...` : 'null');
     }
     return this.token;
   }
@@ -32,11 +28,7 @@ export class ApiClient {
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-    } else {
-      console.warn('⚠️ No token available for request to', endpoint);
     }
-
-    console.log('🔐 Making request to', endpoint, 'with token:', token ? 'present' : 'missing');
 
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
@@ -45,11 +37,9 @@ export class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Request failed' }));
-      console.error('❌ Request failed:', endpoint, response.status, error);
 
       // If 401 Unauthorized, token might be expired - force logout
       if (response.status === 401 && endpoint !== '/auth/login' && endpoint !== '/auth/register') {
-        console.warn('🔓 Token expired or invalid, logging out...');
         // Import authStore dynamically to avoid circular dependency
         import('@/stores/authStore').then(({ useAuthStore }) => {
           useAuthStore.getState().logout();

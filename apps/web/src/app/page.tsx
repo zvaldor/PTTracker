@@ -32,10 +32,8 @@ export default function HomePage() {
 
   // Initialize API token on mount
   useEffect(() => {
-    console.log('🔑 Token initialization:', accessToken ? 'token present' : 'no token');
     if (accessToken) {
       api.setToken(accessToken);
-      console.log('✅ Token set in API client');
     }
   }, [accessToken]);
 
@@ -59,22 +57,28 @@ export default function HomePage() {
   const todayWeekday = getDay(today);
   const currentMonth = format(today, 'MMMM yyyy');
 
-  // For monthly view, show all tasks for current month
+  // Filter tasks based on plan mode
   const todayTasks = tasks.filter((task) => {
     if (task.status === 'archived') return false;
 
     if (planMode === 'weekly') {
+      // Show tasks for today's weekday, or tasks without weekday set
+      if (task.weeklyDay === null || task.weeklyDay === undefined) {
+        return true; // Show tasks without weekday
+      }
       return task.weeklyDay === todayWeekday;
     }
+
     if (planMode === 'monthly') {
-      // Show all tasks with plannedDateActual in current month
-      if (task.plannedDateActual) {
-        const taskMonth = format(new Date(task.plannedDateActual), 'MMMM yyyy');
-        return taskMonth === currentMonth;
+      // Show tasks for current month, or tasks without date set
+      if (!task.plannedDateActual) {
+        return true; // Show tasks without date
       }
-      return false;
+      const taskMonth = format(new Date(task.plannedDateActual), 'MMMM yyyy');
+      return taskMonth === currentMonth;
     }
-    return false;
+
+    return true; // Default: show all non-archived tasks
   });
 
   const completedCount = todayTasks.filter(t => t.status === 'done').length;
