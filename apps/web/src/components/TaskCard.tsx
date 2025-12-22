@@ -24,9 +24,11 @@ export function TaskCard({ task }: TaskCardProps) {
   const [showDesirePicker, setShowDesirePicker] = useState(false);
   const [showDifficultyPicker, setShowDifficultyPicker] = useState(false);
 
+  const dateRef = useRef<HTMLButtonElement>(null);
   const weekdayRef = useRef<HTMLButtonElement>(null);
   const desireRef = useRef<HTMLButtonElement>(null);
   const difficultyRef = useRef<HTMLButtonElement>(null);
+  const datePickerRef = useRef<HTMLDivElement>(null);
   const weekdayPickerRef = useRef<HTMLDivElement>(null);
   const desirePickerRef = useRef<HTMLDivElement>(null);
   const difficultyPickerRef = useRef<HTMLDivElement>(null);
@@ -35,7 +37,8 @@ export function TaskCard({ task }: TaskCardProps) {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node;
-      if (showWeekdayPicker && weekdayPickerRef.current && !weekdayPickerRef.current.contains(target) && !weekdayRef.current?.contains(target)) {
+      if (showWeekdayPicker && weekdayPickerRef.current && !weekdayPickerRef.current.contains(target) &&
+          !weekdayRef.current?.contains(target) && !dateRef.current?.contains(target)) {
         setShowWeekdayPicker(false);
       }
       if (showDesirePicker && desirePickerRef.current && !desirePickerRef.current.contains(target) && !desireRef.current?.contains(target)) {
@@ -156,7 +159,7 @@ export function TaskCard({ task }: TaskCardProps) {
                 </div>
               ) : (
                 <button
-                  ref={weekdayRef}
+                  ref={dateRef}
                   onClick={() => setShowWeekdayPicker(!showWeekdayPicker)}
                   className="w-8 text-center text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
                 >
@@ -237,8 +240,10 @@ export function TaskCard({ task }: TaskCardProps) {
       </div>
 
       {/* Weekday/Date picker popup - positioned relative to button */}
-      {showWeekdayPicker && weekdayRef.current && (() => {
-        const rect = weekdayRef.current.getBoundingClientRect();
+      {showWeekdayPicker && (dateRef.current || weekdayRef.current) && (() => {
+        const triggerRef = (planMode === 'monthly' && dateRef.current) ? dateRef.current : weekdayRef.current;
+        if (!triggerRef) return null;
+        const rect = triggerRef.getBoundingClientRect();
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         const pickerWidth = planMode === 'weekly' ? 280 : 300;

@@ -77,7 +77,9 @@ export default function HomePage() {
       if (!task.plannedDateActual) {
         return true; // Show tasks without date
       }
-      const taskDate = new Date(task.plannedDateActual);
+      // Parse date as local time, not UTC
+      const [year, month, day] = task.plannedDateActual.split('-').map(Number);
+      const taskDate = new Date(year, month - 1, day);
       return taskDate >= startOfWeek && taskDate <= endOfWeek;
     }
 
