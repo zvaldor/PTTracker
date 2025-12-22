@@ -111,6 +111,13 @@ export function TaskCard({ task }: TaskCardProps) {
   let displayDay = '';
   let displayDate = '';
 
+  console.log('TaskCard display calculation for task:', {
+    id: task.id,
+    title: task.title,
+    plannedDateActual: task.plannedDateActual,
+    weeklyDay: task.weeklyDay
+  });
+
   if (task.plannedDateActual) {
     // If task has a specific date
     const date = parse(task.plannedDateActual, 'yyyy-MM-dd', new Date());
@@ -118,9 +125,11 @@ export function TaskCard({ task }: TaskCardProps) {
     const weekday = date.getDay();
     displayDay = WEEKDAY_SHORT[weekday];
     displayDate = day;
+    console.log('Calculated display values:', { displayDay, displayDate, date, weekday });
   } else if (task.weeklyDay !== null && task.weeklyDay !== undefined) {
     // If task only has weekday (legacy), show just weekday
     displayDay = WEEKDAY_SHORT[task.weeklyDay];
+    console.log('Using weeklyDay only:', { displayDay });
   }
 
   return (
