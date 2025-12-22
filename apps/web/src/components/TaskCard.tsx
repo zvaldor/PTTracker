@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { format, parse } from 'date-fns';
 import type { Task, DifficultyTshirt, Desire } from '@pt/shared';
 import { useTasksStore } from '@/stores/tasksStore';
@@ -27,6 +27,31 @@ export function TaskCard({ task }: TaskCardProps) {
   const weekdayRef = useRef<HTMLButtonElement>(null);
   const desireRef = useRef<HTMLButtonElement>(null);
   const difficultyRef = useRef<HTMLButtonElement>(null);
+  const weekdayPickerRef = useRef<HTMLDivElement>(null);
+  const desirePickerRef = useRef<HTMLDivElement>(null);
+  const difficultyPickerRef = useRef<HTMLDivElement>(null);
+
+  // Close pickers when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showWeekdayPicker && weekdayPickerRef.current && !weekdayPickerRef.current.contains(event.target as Node) && !weekdayRef.current?.contains(event.target as Node)) {
+        setShowWeekdayPicker(false);
+      }
+      if (showDesirePicker && desirePickerRef.current && !desirePickerRef.current.contains(event.target as Node) && !desireRef.current?.contains(event.target as Node)) {
+        setShowDesirePicker(false);
+      }
+      if (showDifficultyPicker && difficultyPickerRef.current && !difficultyPickerRef.current.contains(event.target as Node) && !difficultyRef.current?.contains(event.target as Node)) {
+        setShowDifficultyPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [showWeekdayPicker, showDesirePicker, showDifficultyPicker]);
 
   const handleToggleDone = async () => {
     await updateTask(task.id, {
@@ -162,6 +187,7 @@ export function TaskCard({ task }: TaskCardProps) {
       {/* Weekday picker popup - positioned relative to button */}
       {showWeekdayPicker && weekdayRef.current && (
         <div
+          ref={weekdayPickerRef}
           className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
           style={{
             top: `${weekdayRef.current.getBoundingClientRect().bottom + 8}px`,
@@ -185,6 +211,7 @@ export function TaskCard({ task }: TaskCardProps) {
       {/* Desire picker popup - positioned relative to button */}
       {showDesirePicker && desireRef.current && (
         <div
+          ref={desirePickerRef}
           className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
           style={{
             top: `${desireRef.current.getBoundingClientRect().bottom + 8}px`,
@@ -208,6 +235,7 @@ export function TaskCard({ task }: TaskCardProps) {
       {/* Difficulty picker popup - positioned relative to button */}
       {showDifficultyPicker && difficultyRef.current && (
         <div
+          ref={difficultyPickerRef}
           className="fixed z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 border border-white/20 dark:border-white/10 rounded-2xl p-2 shadow-lg"
           style={{
             top: `${difficultyRef.current.getBoundingClientRect().bottom + 8}px`,
