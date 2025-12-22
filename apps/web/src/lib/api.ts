@@ -28,7 +28,11 @@ export class ApiClient {
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.warn('⚠️ No token available for request to', endpoint);
     }
+
+    console.log('🔐 Making request to', endpoint, 'with token:', token ? 'present' : 'missing');
 
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
@@ -37,6 +41,7 @@ export class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Request failed' }));
+      console.error('❌ Request failed:', endpoint, response.status, error);
       throw new Error(error.message || 'Request failed');
     }
 

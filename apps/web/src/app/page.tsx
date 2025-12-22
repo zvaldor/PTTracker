@@ -32,8 +32,10 @@ export default function HomePage() {
 
   // Initialize API token on mount
   useEffect(() => {
+    console.log('🔑 Token initialization:', accessToken ? 'token present' : 'no token');
     if (accessToken) {
       api.setToken(accessToken);
+      console.log('✅ Token set in API client');
     }
   }, [accessToken]);
 
