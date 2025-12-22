@@ -112,9 +112,12 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
+        console.log('🔄 Rehydrating auth state, isAuthenticated:', state?.isAuthenticated);
         if (state?.accessToken) {
-          console.log('🔄 Rehydrating auth state, setting token in API client');
+          console.log('🔄 Token found in state:', state.accessToken.substring(0, 20) + '...');
           api.setToken(state.accessToken);
+        } else {
+          console.warn('⚠️ No token found in rehydrated state');
         }
       },
     }

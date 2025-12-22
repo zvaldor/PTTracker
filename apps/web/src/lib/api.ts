@@ -4,17 +4,21 @@ export class ApiClient {
   private token: string | null = null;
 
   setToken(token: string | null) {
+    console.log('💾 Setting token:', token ? `${token.substring(0, 20)}...` : 'null');
     this.token = token;
     if (token) {
       localStorage.setItem('accessToken', token);
+      console.log('✅ Token saved to localStorage');
     } else {
       localStorage.removeItem('accessToken');
+      console.log('🗑️ Token removed from localStorage');
     }
   }
 
   getToken() {
     if (!this.token) {
       this.token = localStorage.getItem('accessToken');
+      console.log('📦 Getting token from localStorage:', this.token ? `${this.token.substring(0, 20)}...` : 'null');
     }
     return this.token;
   }
